@@ -244,6 +244,11 @@ APPEND_SLASH = True
 # Whether to prepend the "www." subdomain to URLs that don't have it.
 PREPEND_WWW = False
 
+# Whether to allow a relative url to be used for a redirect or not.
+# When ``False``, relative urls are re-written to absolute urls.
+# (e.g. /admin/ -> http://testserver/admin/)
+ALLOW_RELATIVE_REDIRECTS = False
+
 # Override the server-derived value of SCRIPT_NAME
 FORCE_SCRIPT_NAME = None
 

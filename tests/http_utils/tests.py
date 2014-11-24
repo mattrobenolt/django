@@ -5,7 +5,7 @@ import gzip
 
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, StreamingHttpResponse
 from django.http.utils import conditional_content_removal, fix_location_header
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 
 # based on Python 3.3's gzip.compress
@@ -81,3 +81,18 @@ class HttpUtilTests(TestCase):
             self.assertTrue(False)
         request.get_host = bomb
         fix_location_header(request, HttpResponseRedirect('http://example.com'))
+
+    def test_fix_location(self):
+        request = HttpRequest()
+        request.get_host = lambda *args, **kwargs: 'testserver'
+        response = HttpResponseRedirect('/foo')
+        fix_location_header(request, response)
+        self.assertEqual(response['Location'], 'http://testserver/foo')
+
+    @override_settings(ALLOW_RELATIVE_REDIRECTS=True)
+    def test_fix_location_allow_relative(self):
+        request = HttpRequest()
+        request.get_host = lambda *args, **kwargs: 'testserver'
+        response = HttpResponseRedirect('/foo')
+        fix_location_header(request, response)
+        self.assertEqual(response['Location'], '/foo')

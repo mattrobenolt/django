@@ -1,6 +1,7 @@
 """
 Functions that modify an HTTP request or response in some way.
 """
+from django.conf import settings
 
 # This group of functions are run as part of the response handling, after
 # everything else, including all response middleware. Think of them as
@@ -11,12 +12,15 @@ Functions that modify an HTTP request or response in some way.
 
 def fix_location_header(request, response):
     """
-    Ensures that we always use an absolute URI in any location header in the
-    response. This is required by RFC 2616, section 14.30.
+    RFC 7231, section 7.1.2 (obsoletes RFC 2616) explicitly allows relative
+    paths used in a Location header.
 
-    Code constructing response objects is free to insert relative paths, as
-    this function converts them to absolute paths.
+    Historically, RFC 2616, section 14.30 disallowed this behavior, so this
+    middleware converts it to an absolute-URI by default.
     """
+    if settings.ALLOW_RELATIVE_REDIRECTS:
+        return response
+
     if 'Location' in response:
         response['Location'] = request.build_absolute_uri(response['Location'])
     return response
